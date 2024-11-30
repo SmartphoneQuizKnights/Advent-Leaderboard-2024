@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advent Leaderboard 2024</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin: 0;
+            color: #333;
+        }
+        h1 {
+            background-color: #008000; /* Green */
+            color: #fff; /* White */
+            padding: 20px;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 90%;
+            max-width: 1200px;
+        }
+        th {
+            background-color: #FF0000; /* Red */
+            color: #fff; /* White */
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 1.2em;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ffeeba; /* Light festive yellow */
+        }
+        .total {
+            font-weight: bold;
+            color: #008000; /* Green */
+        }
+    </style>
+</head>
+<body>
+    <h1>Advent Leaderboard 2024</h1>
+    <table id="leaderboard">
+        <thead>
+            <!-- Header will be dynamically generated -->
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="27">Loading data...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT8zFHR9ty27x084GFS0TuyFEVxqgbYCg_rNciCP4xyzT2c4ZIS8PGTcLibLL8m3brPaEd6p_wjQ3re/pub?gid=1649630944&output=csv";
+
+        async function loadLeaderboard() {
+            console.log("Fetching data from Google Sheets...");
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                if (!response.ok) throw new Error("Failed to fetch the CSV data");
+
+                const data = await response.text();
+                const rows = data.split("\n").map(row => row.split(",").map(cell => cell.trim()));
+
+                const thead = document.querySelector("#leaderboard thead");
+                const tbody = document.querySelector("#leaderboard tbody");
+
+                // Clear previous content
+                thead.innerHTML = "";
+                tbody.innerHTML = "";
+
+                // Render the header row
+                const headerRow = rows[0];
+                const headerTr = document.createElement("tr");
+                headerRow.forEach(header => {
+                    const th = document.createElement("th");
+                    th.textContent = header;
+                    headerTr.appendChild(th);
+                });
+                thead.appendChild(headerTr);
+
+                // Render data rows
+                rows.slice(1).forEach(row => {
+                    if (row.every(cell => cell === "")) return; // Skip empty rows
+
+                    const tr = document.createElement("tr");
+                    row.forEach(cell => {
+                        const td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+
+                console.log("Leaderboard loaded successfully!");
+            } catch (error) {
+                console.error("Error loading leaderboard:", error);
+                document.querySelector("#leaderboard tbody").innerHTML = `
+                    <tr><td colspan="27">Failed to load leaderboard. Please try again later.</td></tr>
+                `;
+            }
+        }
+
+        loadLeaderboard();
+        setInterval(loadLeaderboard, 60000); // Refresh data every 60 seconds
+    </script>
+</body>
+</html>
